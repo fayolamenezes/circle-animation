@@ -36,8 +36,6 @@
 
     .carousel {
       position: absolute;
-      width: 100%;
-      height: 100%;
       transform-style: preserve-3d;
       display: flex;
       justify-content: center;
@@ -47,12 +45,11 @@
     .card {
       position: absolute;
       width: 100%;
-      height: 100px;
+      height: 60px;
+      font-size: 32px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 48px;
-      color: white;
       opacity: 0.1;
       pointer-events: none;
       transition: opacity 0.3s ease;
@@ -69,7 +66,6 @@
     .after-carousel {
       height: 100vh;
       background: #222;
-      color: white;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -86,7 +82,7 @@
   </div>
 
   <div class="after-carousel">
-    🎉 You've scrolled through all 10 cards!
+    🎉 You've reached Card 10!
   </div>
 
   <script>
@@ -94,10 +90,11 @@
 
     const carousel = document.getElementById("carousel");
     const cardCount = 10;
-    const radius = 400; // Larger for more spacing
+    const radius = 200; // Smaller spacing
     const angleStep = 360 / cardCount;
     const cards = [];
 
+    // Create cards arranged in a vertical circle
     for (let i = 0; i < cardCount; i++) {
       const card = document.createElement("div");
       card.className = "card";
@@ -110,13 +107,14 @@
 
     const rotation = { x: 0 };
 
+    // Scroll-controlled rotation (only 9 steps = 324°)
     gsap.to(rotation, {
-      x: -360,
+      x: -angleStep * (cardCount - 1), // Stop at Card 10
       ease: "none",
       scrollTrigger: {
         trigger: ".section",
         start: "top top",
-        end: `+=${cardCount * 150}`,
+        end: `+=${(cardCount - 1) * 150}`,
         scrub: true,
         pin: true,
         onUpdate: () => {
@@ -128,16 +126,13 @@
 
     function updateActiveCard(rot) {
       const normalized = ((Math.abs(rot) % 360) + 360) % 360;
-      const index = Math.round(normalized / angleStep) % cardCount;
+      const index = Math.round(normalized / angleStep);
 
       cards.forEach((card, i) => {
         card.classList.remove("active", "adjacent");
         if (i === index) {
           card.classList.add("active");
-        } else if (
-          i === (index + 1) % cardCount ||
-          i === (index - 1 + cardCount) % cardCount
-        ) {
+        } else if (i === index - 1 || i === index + 1) {
           card.classList.add("adjacent");
         }
       });
