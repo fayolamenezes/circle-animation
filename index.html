@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Scroll-Controlled Text Carousel</title>
+  <title>Scroll-Controlled Vertical Text Carousel</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <style>
@@ -12,6 +12,7 @@
       background: #111;
       font-family: sans-serif;
       overflow-x: hidden;
+      color: white;
     }
 
     .section {
@@ -19,6 +20,50 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
+    }
+
+    .carousel-container {
+      perspective: 1000px;
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .carousel {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      position: absolute;
+      width: 100%;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 48px;
+      color: white;
+      opacity: 0.1;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .card.active {
+      opacity: 1;
+    }
+
+    .card.adjacent {
+      opacity: 0.4;
     }
 
     .after-carousel {
@@ -30,116 +75,75 @@
       align-items: center;
       font-size: 32px;
     }
-
-    .carousel-container {
-      perspective: 1200px;
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .carousel {
-      width: 400px;
-      height: 600px;
-      position: relative;
-      transform-style: preserve-3d;
-      transform-origin: center center;
-    }
-
-    .card {
-      position: absolute;
-      width: 100%;
-      height: 300px;
-      top: 0;
-      left: 0;
-      transform-style: preserve-3d;
-      transform-origin: center center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 60px;
-      color: white;
-      font-weight: bold;
-      opacity: 0.15;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-
-    .card.active {
-      opacity: 1;
-    }
   </style>
 </head>
 <body>
 
   <div class="section">
     <div class="carousel-container">
-      <div class="carousel" id="carousel">
-        <!-- Cards via JS -->
-      </div>
+      <div class="carousel" id="carousel"></div>
     </div>
   </div>
 
   <div class="after-carousel">
-    🎉 You scrolled through the whole carousel!
+    🎉 You've scrolled through all 10 cards!
   </div>
 
   <script>
     gsap.registerPlugin(ScrollTrigger);
 
-    const carousel = document.getElementById('carousel');
+    const carousel = document.getElementById("carousel");
     const cardCount = 10;
-    const radius = 400;
+    const radius = 400; // Larger for more spacing
     const angleStep = 360 / cardCount;
     const cards = [];
 
-    // Create cards in 3D ring, fully centered
     for (let i = 0; i < cardCount; i++) {
-      const card = document.createElement('div');
-      card.className = 'card';
+      const card = document.createElement("div");
+      card.className = "card";
       card.textContent = `Card ${i + 1}`;
-
-      const angle = -i * angleStep;
-      card.style.transform = `
-        rotateX(${angle}deg)
-        translateZ(${radius}px)
-      `;
-
+      const angle = i * angleStep;
+      card.style.transform = `rotateX(${angle}deg) translateZ(${radius}px)`;
       carousel.appendChild(card);
       cards.push(card);
     }
 
-    const rotation = { angle: 0 };
+    const rotation = { x: 0 };
 
-    // Scroll-based rotation
     gsap.to(rotation, {
-      angle: 360,
-      ease: 'none',
+      x: -360,
+      ease: "none",
       scrollTrigger: {
-        trigger: '.section',
-        start: 'top top',
-        end: `+=${cardCount * 200}`,
+        trigger: ".section",
+        start: "top top",
+        end: `+=${cardCount * 150}`,
         scrub: true,
         pin: true,
-        anticipatePin: 1,
-        onUpdate: () => updateActiveCard(rotation.angle)
-      },
-      onUpdate: () => {
-        carousel.style.transform = `translateZ(-${radius}px) rotateX(${rotation.angle}deg)`;
+        onUpdate: () => {
+          carousel.style.transform = `rotateX(${rotation.x}deg)`;
+          updateActiveCard(rotation.x);
+        },
       }
     });
 
-    function updateActiveCard(currentRotation) {
-      const normalized = (currentRotation % 360 + 360) % 360;
+    function updateActiveCard(rot) {
+      const normalized = ((Math.abs(rot) % 360) + 360) % 360;
       const index = Math.round(normalized / angleStep) % cardCount;
 
       cards.forEach((card, i) => {
-        card.classList.toggle('active', i === index);
+        card.classList.remove("active", "adjacent");
+        if (i === index) {
+          card.classList.add("active");
+        } else if (
+          i === (index + 1) % cardCount ||
+          i === (index - 1 + cardCount) % cardCount
+        ) {
+          card.classList.add("adjacent");
+        }
       });
     }
+
+    updateActiveCard(0);
   </script>
 
 </body>
