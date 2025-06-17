@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Scroll-Controlled Vertical Text Carousel</title>
+  <title>Scroll-Controlled Vertical Text Carousel (Anticlockwise)</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <style>
@@ -43,16 +43,20 @@
     }
 
     .card {
-      position: absolute;
-      width: 100%;
-      height: 60px;
-      font-size: 32px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0.1;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
+    position: absolute;
+    width: 500px;
+    height: 120px;
+    font-size: 36px;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    line-height: 1.4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.1;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
     .card.active {
@@ -86,24 +90,38 @@
   </div>
 
   <div class="after-carousel">
-    🎉 You've reached Card 10!
+    Next Section
   </div>
 
   <script>
     gsap.registerPlugin(ScrollTrigger);
 
     const carousel = document.getElementById("carousel");
-    const cardCount = 10;
     const radius = 200;
+    const texts = [
+      "Welcome to the Carousel",
+      "Discover Unique Ideas",
+      "Creative Thinking",
+      "Design that Inspires",
+      "Elevate Your Brand",
+      "Engage with Emotion",
+      "Interactive Experience",
+      "Visual Storytelling",
+      "Bold, Bright, Beautiful",
+      "Thanks for Scrolling!"
+    ];
+
+    const cardCount = texts.length;
     const angleStep = 360 / cardCount;
     const cards = [];
 
+    // Create and position cards with custom text
     for (let i = 0; i < cardCount; i++) {
       const card = document.createElement("div");
       card.className = "card";
-      card.textContent = `Card ${i + 1}`;
+      card.textContent = texts[i];
       const angle = i * angleStep;
-      card.style.transform = `rotateX(${angle}deg) translateZ(${radius}px)`;
+      card.style.transform = `rotateX(-${angle}deg) translateZ(${radius}px)`;
       carousel.appendChild(card);
       cards.push(card);
     }
@@ -111,7 +129,7 @@
     const rotation = { x: 0 };
 
     gsap.to(rotation, {
-      x: -angleStep * (cardCount - 1), // Stop at Card 10
+      x: angleStep * (cardCount - 1), // anticlockwise
       ease: "none",
       scrollTrigger: {
         trigger: ".section",
@@ -127,12 +145,11 @@
     });
 
     function updateActiveCard(rot) {
-      const normalized = ((Math.abs(rot) % 360) + 360) % 360;
+      const normalized = ((rot % 360) + 360) % 360;
       const index = Math.round(normalized / angleStep);
 
       cards.forEach((card, i) => {
         card.classList.remove("active", "adjacent", "hidden");
-
         if (i === index) {
           card.classList.add("active");
         } else if (i === index - 1 || i === index + 1) {
