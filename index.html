@@ -63,6 +63,10 @@
       opacity: 0.4;
     }
 
+    .card.hidden {
+      display: none;
+    }
+
     .after-carousel {
       height: 100vh;
       background: #222;
@@ -90,11 +94,10 @@
 
     const carousel = document.getElementById("carousel");
     const cardCount = 10;
-    const radius = 200; // Smaller spacing
+    const radius = 200;
     const angleStep = 360 / cardCount;
     const cards = [];
 
-    // Create cards arranged in a vertical circle
     for (let i = 0; i < cardCount; i++) {
       const card = document.createElement("div");
       card.className = "card";
@@ -107,7 +110,6 @@
 
     const rotation = { x: 0 };
 
-    // Scroll-controlled rotation (only 9 steps = 324°)
     gsap.to(rotation, {
       x: -angleStep * (cardCount - 1), // Stop at Card 10
       ease: "none",
@@ -129,11 +131,14 @@
       const index = Math.round(normalized / angleStep);
 
       cards.forEach((card, i) => {
-        card.classList.remove("active", "adjacent");
+        card.classList.remove("active", "adjacent", "hidden");
+
         if (i === index) {
           card.classList.add("active");
         } else if (i === index - 1 || i === index + 1) {
           card.classList.add("adjacent");
+        } else {
+          card.classList.add("hidden");
         }
       });
     }
