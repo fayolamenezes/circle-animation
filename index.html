@@ -2,17 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>3D Vertical Carousel</title>
+  <title>Scroll-Controlled Vertical Carousel</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       background: #111;
       font-family: sans-serif;
-      overflow: hidden;
+      overflow-x: hidden;
+    }
+
+    .section {
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+
+    .after-carousel {
       height: 100vh;
+      background: #222;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 32px;
     }
 
     .carousel-container {
@@ -26,7 +42,6 @@
       height: 100%;
       position: relative;
       transform-style: preserve-3d;
-      animation: rotateX 20s linear infinite;
     }
 
     .card {
@@ -47,36 +62,37 @@
       transform-style: preserve-3d;
       transform-origin: center center;
     }
-
-    @keyframes rotateX {
-      from {
-        transform: rotateX(0deg);
-      }
-      to {
-        transform: rotateX(360deg);
-      }
-    }
   </style>
 </head>
 <body>
-  <div class="carousel-container">
-    <div class="carousel" id="carousel">
-      <!-- Cards will be injected here -->
+
+  <div class="section">
+    <div class="carousel-container">
+      <div class="carousel" id="carousel">
+        <!-- Cards inserted via JS -->
+      </div>
     </div>
   </div>
 
+  <div class="after-carousel">
+    🎉 You scrolled through the whole carousel!
+  </div>
+
   <script>
+    gsap.registerPlugin(ScrollTrigger);
+
     const carousel = document.getElementById('carousel');
     const cardCount = 10;
     const radius = 250;
     const angleStep = 360 / cardCount;
 
+    // 🧠 Place cards from 0 to 360 in **reverse angle** so Card 1 starts in front
     for (let i = 0; i < cardCount; i++) {
       const card = document.createElement('div');
       card.className = 'card';
       card.textContent = `Card ${i + 1}`;
 
-      const angle = i * angleStep;
+      const angle = -i * angleStep; // ✅ reverse angle direction
       card.style.transform = `
         rotateX(${angle}deg)
         translateZ(${radius}px)
@@ -85,6 +101,21 @@
 
       carousel.appendChild(card);
     }
+
+    // 🌀 Scroll rotates the carousel clockwise, so Card 1 → 10 show in order
+    gsap.to(carousel, {
+      rotateX: 360, // ✅ rotate CLOCKWISE
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.section',
+        start: 'top top',
+        end: `+=${cardCount * 100}`,
+        scrub: true,
+        pin: true,
+        anticipatePin: 1,
+      }
+    });
   </script>
+
 </body>
 </html>
